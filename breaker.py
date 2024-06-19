@@ -47,5 +47,5 @@ def is_primative(field_type):
     
     """
 
-    primitive_types = {"int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "bool", "string", "time", "duration"}
+    primitive_types = {"int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "bool", "string", "time", "duration", "byte"}
     return field_type in primitive_types
