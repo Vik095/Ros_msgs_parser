@@ -1,118 +1,51 @@
-import os
 
+import os.path
 import re
 
-import sys
-
-
-
-output_lines=[]
-
-def parse_msg_file(name,filename,msgname):
-
-    f=open(filename, 'r')
-
-    lines = f.readlines()
-
-
-
-    types = []
+def process(msgtype, msgname):
+    """
+    Process a ROS message type and its corresponding instance name.
+    
+    """
 
     
+    filename = os.path.join(os.path.dirname(__file__), "Messages", f"{msgtype}.msg")
+    return parse_msg_file(msgtype, filename, msgname, [])
 
+def parse_msg_file(name, filename, msgname, output):
+    """
+    Parse the Messages/ directory and return the structure of the message. 
+
+    """
+    
+    file = open(filename, "r")
+    lines = file.readlines()
     for line in lines:
-
         line = line.strip()
-
         if not line.startswith("#") and line:
-
             parts = line.split()
-
-            
-
             field_type = parts[0]
-
             field_name = parts[1]
-
-
-
             array_match = re.match(r"(.+?)\[(\d*)\]", field_type)
-
             if array_match:
-
                 base_type = array_match.group(1)
-
                 array_size = array_match.group(2)
-
                 array_size = int(array_size) if array_size else "unspecified"
-
-
-
                 field_type = base_type
-
-            
-
-            
-
-            if(field_type.__contains__("/")):
-
-                field_type=field_type.split("/")[1]
-
-
-
-            if not is_primitive(field_type):
-
-                nested_filename = os.path.join(os.path.join(os.path.dirname(__file__),"Messages"), f"{field_type}.msg")
-
-                
-
-                parse_msg_file(name,nested_filename,msgname+"."+field_name)
-
+            if (field_type.__contains__("/")):
+                field_type = field_type.split("/")[1]
+            if not is_primative(field_type):
+                nested_filename = os.path.join(os.path.dirname(__file__), "Messages", f"{field_type}.msg")
+                parse_msg_file(name, nested_filename, f"{msgname}.{field_name}", output)
             else:
+                output.append(f"{msgname}.{field_name}")
+    return output
 
-                
+def is_primative(field_type):
+    """
+    Check if the type of a field is a ROS primitive date type.
+    
+    """
 
-                output_line = f"list.append({msgname}.{field_name})"
-
-                output_lines.append(output_line)
-
-                
-
-                
-
-
-
-            types.append(field_type)
-
-            
-
-
-
-    return output_lines
-
-
-
-def is_primitive(field_type):
-
-    primitive_types = {'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 'int64', 'uint64',
-
-                       'float32', 'float64', 'bool', 'string', 'time', 'duration'}
-
+    primitive_types = {"int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "bool", "string", "time", "duration"}
     return field_type in primitive_types
-
-
-
-def process(msgtype,msgname):
-
-    
-
-    
-
-    filename = os.path.join(os.path.join(os.path.dirname(__file__),"Messages"), f"{msgtype}.msg")
-
-    return parse_msg_file(msgtype,filename,msgname)
-
-
-
-
-
